@@ -11,77 +11,39 @@ namespace Examen5
             Console.WriteLine("que estarán ubicados en las planicies(A)cidalia, (E)lysium y (U)topia.");
             Console.WriteLine("Cada lanzamiento tiene un cargamento de hasta 10.000 kg.\n");
 
-            int totalLanzamientos = 0;
-            string destino = "";
-            float pesoCarga = 0;
+            Aterrizaje[] ArregloAterrizajes = new Aterrizaje[15];
+            int i = 0;
 
-            /*
-            Posiciones en los arreglos
-                0: Acidalia
-                1: Elysium
-                2: Utopia
-            */
-
-            //Este arreglo almacenará los totales de carga por planicie
-            float[] totalesCarga = new float[3];
-
-            //Este arreglo almacenará los totales de lanzamiento por planicie
-            int[] cantidadLanzamientos = new int[3];
-
-            //inicializamos los arreglos que totalizan
-            for (int i = 0; i < 3; i++)
+            while (i < ArregloAterrizajes.Length)
             {
-                totalesCarga[i] = 0;
-                cantidadLanzamientos[i] = 0;
-            }
-
-            while (totalLanzamientos < 15)
-            {
-                Console.Write("\nIngresa el destino para el lanzamiento {0} (A,E,U): ", totalLanzamientos + 1);
-                destino = Console.ReadLine().ToUpper();
-
-                //verificamos que el destino sea válido
-                if (destino == "A" || destino == "E" || destino == "U")
+                ArregloAterrizajes[i] = new Aterrizaje();
+                Console.WriteLine($"Ingrese un destino para el lanzamiento {i + 1}: ");
+                ArregloAterrizajes[i].destino = Console.ReadLine().ToUpper();
+                if (ArregloAterrizajes[i].destino == "A" || ArregloAterrizajes[i].destino == "E" || ArregloAterrizajes[i].destino == "U")
                 {
-                    try
+                    bool valido = false;
+                    while (valido == false)
                     {
-                        //El destino es válido, leemos el valor del cargamento
-                        Console.Write("Ingresa el valor del cargamento [0;10000]: ");
-                        pesoCarga = float.Parse(Console.ReadLine());
 
-                        if (pesoCarga >= 0 && pesoCarga <= 10000)
+                        try
                         {
-                            //El peso de la carga está en el destino válido, procedemos a acumular en la variable respectiva
-                            switch (destino)
+                            Console.WriteLine($"Ingrese la carga con la que llegó el lanzamiento {i + 1}: ");
+                            ArregloAterrizajes[i].carga = float.Parse(Console.ReadLine());
+
+                            if (ArregloAterrizajes[i].carga <= 0 || ArregloAterrizajes[i].carga >= 10000)
+                                Console.WriteLine("La carga del lanzamiento es un número no válido, intente nuevamente\n");
+                            else
                             {
-                                case "A":
-                                    cantidadLanzamientos[0]++;
-                                    totalesCarga[0] += pesoCarga;
-                                    break;
-
-                                case "E":
-                                    cantidadLanzamientos[1]++;
-                                    totalesCarga[1] += pesoCarga;
-                                    break;
-
-                                case "U":
-                                    cantidadLanzamientos[2]++;
-                                    totalesCarga[2] += pesoCarga;
-                                    break;
+                                valido = true;
+                                i++;
                             }
 
-                            //Finalmente incrementamos el conteo de lanzamientos, sentencia de salida del ciclo while
-                            totalLanzamientos++;
                         }
-                        else
+                        catch (FormatException error)
                         {
-                            Console.WriteLine("Ingresaste un valor de carga fuera del rango [0;10000]. Intenta nuevamente! \n");
+                            Console.WriteLine("Ingresaste un dato no numérico. Intenta nuevamente!");
+                            Console.WriteLine("Error: {0} \n", error.Message);
                         }
-                    }
-                    catch (FormatException error)
-                    {
-                        Console.WriteLine("Ingresaste un dato no numérico. Intenta nuevamente!");
-                        Console.WriteLine("Error: {0} \n", error.Message);
                     }
                 }
                 else
@@ -90,48 +52,37 @@ namespace Examen5
                 }
             }
 
-            //aqui calculamos los promedios de efectividad
-            float[] promedios = CalculaPromedioEfectividad(cantidadLanzamientos, totalesCarga);
+            float promedios = CalculaPromedioEfectividad(ArregloAterrizajes);
 
-            //Aqui visualizamos resultados
             Console.WriteLine("\n\nResultados obtenidos de los lanzamientos:\n");
+            Console.WriteLine("Las planicies son A(cidalia), E(lysium) y U(topia)\n");
 
-            Console.Write("\nPlanicie: \tA \tE \tU");
-            Console.Write("\nLanzamientos: \t");
-            for (int i = 0; i < 3; i++)
-                Console.Write(cantidadLanzamientos[i] + "\t");
+            for (i = 0; i < ArregloAterrizajes.Length; i++)
+            {
+                Console.WriteLine($"Lanzamiento N°{i + 1}: ");
+                Console.WriteLine($"Carga: {ArregloAterrizajes[i].carga} kg");
+                Console.WriteLine($"Destino: {ArregloAterrizajes[i].destino}");
+                Console.WriteLine();
+            }
 
-            Console.Write("\nTotal Carga: \t");
-            for (int i = 0; i < 3; i++)
-                Console.Write(totalesCarga[i] + "\t");
-
-            Console.Write("\nPromedio: \t");
-            for (int i = 0; i < 3; i++)
-                Console.Write(promedios[i] + "\t");
-
-            Console.WriteLine();
+            Console.WriteLine($"\nPromedio: {promedios}");
 
         }
 
-        /// <summary>
-        /// Función que calcula el promedio de carga recibido en cada planicie segun el número de lanzamientos
-        /// </summary>
-        /// <param name="arregloLanzamientos">Total de lanzamientos por planicie</param>
-        /// <param name="arregloCargas">Total Carga recibida por planicie</param>
-        /// <returns>los promedios de carga recibidos por planicie</returns>
-        static float[] CalculaPromedioEfectividad(int[] arregloLanzamientos, float[] arregloCargas)
+        
+        static float CalculaPromedioEfectividad(Aterrizaje[] aterrizajes)
         {
-            float[] promedios = new float[3];
 
-            //aqui calculamos el promedio, evitando la división por cero
-            for (int i = 0; i < promedios.Length; i++)
+            float promedios = 0;
+            int i;
+
+            for (i = 0; i < aterrizajes.Length; i++)
             {
-                //Si no hay lanzamientos, el promedio es cero
-                if (arregloLanzamientos[i] == 0)
-                    promedios[i] = 0;
-                else
-                    promedios[i] = arregloCargas[i] / arregloLanzamientos[i];
+                promedios += aterrizajes[i].carga;
+
             }
+            promedios /= aterrizajes.Length;
+
             return promedios;
         }
     }
